@@ -47,7 +47,7 @@ for (const [title, items] of sections) {
     cantSplit: true,
     children: [cell(title, W, { span: 5, fill: "DDEBF7", run: { bold: true, size: 21 } })],
   }));
-  for (const [item, note] of items) {
+  for (const [item, note, teacher] of items) {
     rows.push(new TableRow({
       cantSplit: true,
       children: [
@@ -55,7 +55,9 @@ for (const [title, items] of sections) {
         cell(item, COLS[1]),
         cell(note, COLS[2], { run: { size: 16, color: "555555" } }),
         cell("□", COLS[3], { align: AlignmentType.CENTER, run: { size: 24 } }),
-        cell("□", COLS[4], { align: AlignmentType.CENTER, run: { size: 24 } }),
+        teacher
+          ? cell("□", COLS[4], { align: AlignmentType.CENTER, run: { size: 24 } })
+          : cell("", COLS[4], { fill: "D9D9D9" }),
       ],
     }));
   }

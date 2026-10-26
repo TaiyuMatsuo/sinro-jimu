@@ -122,21 +122,22 @@ ws2.freeze_panes = "B4"
 ws3 = wb.create_sheet("チェック項目")
 ws3["A1"] = "チェック項目一覧（生徒配布用シートと同じ内容）"
 ws3["A1"].font = Font(name=FONT, bold=True, size=14)
-for c, h in enumerate(["No", "確認項目", "補足・メモ"], 1):
+for c, h in enumerate(["No", "確認項目", "補足・メモ", "先生確認"], 1):
     style(ws3.cell(3, c, h), **HEAD)
 r, n = 4, 1
 for sec in data["sections"]:
     ws3.cell(r, 1, sec["title"])
-    ws3.merge_cells(start_row=r, start_column=1, end_row=r, end_column=3)
-    for c in range(1, 4):
+    ws3.merge_cells(start_row=r, start_column=1, end_row=r, end_column=4)
+    for c in range(1, 5):
         style(ws3.cell(r, c), font=Font(name=FONT, bold=True, size=10), fill=PatternFill("solid", fgColor="DDEBF7"))
     r += 1
-    for item, note in sec["items"]:
+    for item, note, teacher in sec["items"]:
         style(ws3.cell(r, 1, n), alignment=center)
         style(ws3.cell(r, 2, item))
         style(ws3.cell(r, 3, note), font=Font(name=FONT, size=9, color="555555"))
+        style(ws3.cell(r, 4, "○" if teacher else ""), alignment=center)
         r, n = r + 1, n + 1
-for c, w in enumerate([5, 64, 34], 1):
+for c, w in enumerate([5, 64, 34, 9], 1):
     ws3.column_dimensions[get_column_letter(c)].width = w
 
 out = ROOT / "output" / "私立高校_Web出願_進捗管理.xlsx"

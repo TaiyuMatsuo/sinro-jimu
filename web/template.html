@@ -75,6 +75,7 @@ li label:hover { background: var(--navy-soft); }
 li input { width: 20px; height: 20px; margin: 3px 0 0; accent-color: var(--done); cursor: pointer; }
 li input:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
 .item { min-width: 0; }
+.tag { display: inline-block; margin-left: 6px; font-size: 11px; font-weight: 700; color: var(--navy); border: 1px solid var(--navy); border-radius: 3px; padding: 0 5px; vertical-align: 1px; white-space: nowrap; }
 .note { display: block; font-size: 12.5px; color: var(--muted); }
 li input:checked + .item .text { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--done); }
 .foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; color: var(--muted); font-size: 13px; }
@@ -151,10 +152,10 @@ DATA.sections.forEach((sec, si) => {
   el.className = "card section";
   el.innerHTML = `<div class="stamp" aria-hidden="true">済</div><div class="section-head"><div><div class="when">${sec.date}<span class="now-badge">今ここ</span></div><h2>${sec.title}</h2></div><span class="count"></span></div>`;
   const ul = document.createElement("ul");
-  sec.items.forEach(([text, note]) => {
+  sec.items.forEach(([text, note, teacher]) => {
     const id = `item-${++n}`;
     const li = document.createElement("li");
-    li.innerHTML = `<label for="${id}"><input type="checkbox" id="${id}"><span class="item"><span class="text">${n}. ${text}</span>${note ? `<span class="note">${note}</span>` : ""}</span></label>`;
+    li.innerHTML = `<label for="${id}"><input type="checkbox" id="${id}"><span class="item"><span class="text">${n}. ${text}</span>${teacher ? '<span class="tag">先生が確認</span>' : ""}${note ? `<span class="note">${note}</span>` : ""}</span></label>`;
     const cb = li.querySelector("input");
     cb.checked = !!state.checks[id];
     cb.addEventListener("change", () => { state.checks[id] = cb.checked; save(); update(); });

@@ -1,0 +1,191 @@
+<title>私立高校 Web出願チェック</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;500;700&family=Shippori+Mincho+B1:wght@700&display=swap">
+<style>
+/* 受験票のような紙面：藍色の罫線と、完了したら朱色の「済」印 */
+:root {
+  --bg: #f6f7fa;
+  --paper: #ffffff;
+  --ink: #1b2433;
+  --muted: #5d6779;
+  --line: #d5dae4;
+  --navy: #1f4e79;
+  --navy-soft: #e3ecf6;
+  --shu: #c8442b;
+  --done: #2f7a4f;
+  --font-display: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11151c; --paper: #1a2029; --ink: #e6e9ef; --muted: #9aa3b2; --line: #313a48;
+    --navy: #8db8e3; --navy-soft: #20314a; --shu: #f07a60; --done: #6cc794; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11151c; --paper: #1a2029; --ink: #e6e9ef; --muted: #9aa3b2; --line: #313a48;
+  --navy: #8db8e3; --navy-soft: #20314a; --shu: #f07a60; --done: #6cc794; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body);
+  font-size: 15px; line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 56px;
+}
+.wrap { max-width: 860px; margin: 0 auto; display: grid; gap: 28px; }
+header { display: grid; gap: 10px; }
+.eyebrow { font-size: 12px; letter-spacing: .12em; color: var(--navy); font-weight: 700; }
+h1 { font-family: var(--font-display); font-size: clamp(26px, 5vw, 36px); line-height: 1.3; margin: 0; text-wrap: balance; }
+.lead { color: var(--muted); margin: 0; max-width: 62ch; }
+.progress { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; display: grid; gap: 6px; border-bottom: 1px solid var(--line); }
+.progress-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-variant-numeric: tabular-nums; }
+.progress-row strong { font-size: 20px; color: var(--navy); }
+.bar { height: 8px; background: var(--navy-soft); border-radius: 4px; overflow: hidden; }
+.bar > span { display: block; height: 100%; background: var(--navy); width: 0; transition: width .3s ease; }
+h2 { font-size: 17px; margin: 0; }
+.card { background: var(--paper); border: 1px solid var(--line); border-radius: 6px; }
+.schools { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 720px; font-size: 13px; }
+th, td { border: 1px solid var(--line); padding: 6px 8px; text-align: left; }
+th { background: var(--navy-soft); font-weight: 700; white-space: nowrap; }
+td input { width: 100%; border: 0; background: transparent; color: var(--ink); font: inherit; padding: 4px 0; }
+td input:focus { outline: 2px solid var(--navy); outline-offset: 1px; }
+.section { padding: 18px 20px; display: grid; gap: 10px; position: relative; }
+.section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-right: 64px; }
+.count { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.stamp {
+  position: absolute; top: 12px; right: 16px; width: 48px; height: 48px; border: 2.5px solid var(--shu); border-radius: 50%;
+  color: var(--shu); font-family: var(--font-display); font-size: 22px; display: grid; place-items: center;
+  transform: rotate(-12deg) scale(.6); opacity: 0; transition: opacity .2s, transform .25s cubic-bezier(.3,1.6,.6,1);
+}
+.section.complete .stamp { opacity: .9; transform: rotate(-12deg) scale(1); }
+ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+li label { display: grid; grid-template-columns: 26px 1fr; gap: 10px; padding: 8px 6px; border-radius: 4px; cursor: pointer; }
+li label:hover { background: var(--navy-soft); }
+li input { width: 20px; height: 20px; margin: 3px 0 0; accent-color: var(--done); cursor: pointer; }
+li input:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+.item { min-width: 0; }
+.note { display: block; font-size: 12.5px; color: var(--muted); }
+li input:checked + .item .text { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--done); }
+.foot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; color: var(--muted); font-size: 13px; }
+button { font: inherit; font-size: 13px; padding: 6px 14px; border-radius: 4px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+button.danger { border-color: var(--shu); color: var(--shu); }
+.confirm { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">長崎県・中学3年生用</div>
+    <h1 id="title"></h1>
+    <p class="lead">できた項目にチェックを入れましょう。チェックはこの端末のブラウザだけに保存されます。手順や期限は高校ごとに違うので、必ず募集要項とインターネット出願マニュアルで確認してください。</p>
+  </header>
+
+  <div class="progress" aria-live="polite">
+    <div class="progress-row"><span>全体の進み具合</span><span><strong id="pct">0%</strong>　<span id="done">0</span> / <span id="total">0</span> 項目</span></div>
+    <div class="bar"><span id="bar"></span></div>
+  </div>
+
+  <section style="display:grid;gap:10px">
+    <h2>受験する高校</h2>
+    <div class="card schools"><table id="schools"></table></div>
+  </section>
+
+  <div id="sections" style="display:grid;gap:16px"></div>
+
+  <div class="foot">
+    <span>担任・保護者に見せて確認してもらいましょう。</span>
+    <div id="reset-area"><button type="button" id="reset" class="danger">チェックをすべて消す</button></div>
+  </div>
+</div>
+
+<script>
+const DATA = __DATA__;
+const KEY = "sinro-web-shutsugan-v1";
+let state = { checks: {}, schools: {} };
+try { state = Object.assign(state, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
+
+document.getElementById("title").textContent = DATA.title;
+
+// 受験校の表
+const tbl = document.getElementById("schools");
+tbl.innerHTML = "<thead><tr>" + DATA.schoolColumns.map(c => `<th scope="col">${c}</th>`).join("") + "</tr></thead>";
+const tb = document.createElement("tbody");
+for (let r = 0; r < 3; r++) {
+  const tr = document.createElement("tr");
+  DATA.schoolColumns.forEach((c, ci) => {
+    const td = document.createElement("td");
+    const inp = document.createElement("input");
+    inp.id = `school-${r}-${ci}`;
+    inp.setAttribute("aria-label", `${r + 1}校目の${c}`);
+    if (r === 0) inp.placeholder = ["例）〇〇高校", "普通科", "専願", "12/1〜12/25", "12/25", "1/27", "2/3", "2/10"][ci] || "";
+    inp.value = state.schools[inp.id] || "";
+    inp.addEventListener("input", () => { state.schools[inp.id] = inp.value; save(); });
+    td.appendChild(inp); tr.appendChild(td);
+  });
+  tb.appendChild(tr);
+}
+tbl.appendChild(tb);
+
+// チェック項目
+const host = document.getElementById("sections");
+let n = 0;
+const sectionEls = [];
+DATA.sections.forEach((sec, si) => {
+  const el = document.createElement("section");
+  el.className = "card section";
+  el.innerHTML = `<div class="stamp" aria-hidden="true">済</div><div class="section-head"><h2>${sec.title}</h2><span class="count"></span></div>`;
+  const ul = document.createElement("ul");
+  sec.items.forEach(([text, note]) => {
+    const id = `item-${++n}`;
+    const li = document.createElement("li");
+    li.innerHTML = `<label for="${id}"><input type="checkbox" id="${id}"><span class="item"><span class="text">${n}. ${text}</span>${note ? `<span class="note">${note}</span>` : ""}</span></label>`;
+    const cb = li.querySelector("input");
+    cb.checked = !!state.checks[id];
+    cb.addEventListener("change", () => { state.checks[id] = cb.checked; save(); update(); });
+    ul.appendChild(li);
+  });
+  el.appendChild(ul);
+  host.appendChild(el);
+  sectionEls.push(el);
+});
+
+function update() {
+  let done = 0;
+  sectionEls.forEach(el => {
+    const cbs = [...el.querySelectorAll("input[type=checkbox]")];
+    const d = cbs.filter(c => c.checked).length;
+    done += d;
+    el.querySelector(".count").textContent = `${d} / ${cbs.length}`;
+    el.classList.toggle("complete", d === cbs.length);
+  });
+  const pct = Math.round(done / n * 100);
+  document.getElementById("done").textContent = done;
+  document.getElementById("total").textContent = n;
+  document.getElementById("pct").textContent = pct + "%";
+  document.getElementById("bar").style.width = pct + "%";
+}
+update();
+
+// リセット（ページ内で確認）
+const area = document.getElementById("reset-area");
+function showReset() {
+  area.innerHTML = '<button type="button" id="reset" class="danger">チェックをすべて消す</button>';
+  document.getElementById("reset").addEventListener("click", () => {
+    area.innerHTML = '<span class="confirm">本当に消しますか？ <button type="button" id="yes" class="danger">消す</button><button type="button" id="no">やめる</button></span>';
+    document.getElementById("yes").addEventListener("click", () => {
+      state.checks = {}; save();
+      document.querySelectorAll("#sections input[type=checkbox]").forEach(c => c.checked = false);
+      update(); showReset();
+    });
+    document.getElementById("no").addEventListener("click", showReset);
+  });
+}
+showReset();
+</script>

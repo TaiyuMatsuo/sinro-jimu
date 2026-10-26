@@ -15,3 +15,15 @@ node scripts/gansho_checklist.js        # Word
 python3 scripts/gansho_progress_xlsx.py # Excel
 python3 scripts/build_web.py            # Web
 ```
+
+## 副申書 必要条件一覧
+
+| ファイル | 用途 |
+|---|---|
+| `output/副申書_必要条件一覧.xlsx` | 高校ごとの副申書の要否と基準（３年間／各学年／３年時の欠席日数・評定不能・健康上の配慮）を、各高校の担当が入力する一覧 |
+
+先頭行は本校（戸町中）の基準です。各学年で欠席20日以上、成績に（　）表記や評定不能がある、試験で配慮が必要、のいずれかに当てはまる生徒に副申書をつけます。高校名・担当・本校基準は `data/fukushinsho_criteria.json` にまとめてあり、次のコマンドで作り直します。
+
+```bash
+python3 scripts/fukushinsho_criteria_xlsx.py
+```

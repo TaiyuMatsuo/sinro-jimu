@@ -30,13 +30,13 @@ function cell(content, width, opts = {}) {
 
 // ── データ（data/checklist.json を Word・Excel・Web で共有） ──
 const data = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "checklist.json"), "utf8"));
-const sections = data.sections.map((s) => [s.title, s.items]);
+const sections = data.sections.map((s, i) => [`${i ? i + "　" : ""}${s.title}　［${s.date}］`, s.items]);
 
 // ── 部品 ─────────────────────────────
 const COLS = [520, 5780, 2306, 800, 800]; // No / 確認項目 / 補足 / 生徒 / 担任
 const header = new TableRow({
   tableHeader: true,
-  children: ["No", "確認項目", "補足・メモ", "生徒", "担任"].map((h, i) =>
+  children: ["No", "確認項目", "補足・メモ", "生徒", "先生"].map((h, i) =>
     cell(h, COLS[i], { fill: "1F4E79", align: AlignmentType.CENTER, run: { bold: true, color: "FFFFFF" } })),
 });
 

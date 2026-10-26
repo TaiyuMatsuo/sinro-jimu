@@ -41,12 +41,12 @@ ws["A2"] = "各欄で「済・未・要確認」を選びます。「要確認�
 ws["A2"].font = Font(name=FONT, size=9, color="555555")
 
 fixed = ["番号", "氏名", "受験校", "入試区分"]
-ms = data["milestones"]
+ms = [f"{name}\n{date}" for name, date in data["milestones"]]
 headers = fixed + ms + ["完了数", "進み具合"]
 HR = 4
 for c, h in enumerate(headers, 1):
     style(ws.cell(HR, c, h), **HEAD)
-ws.row_dimensions[HR].height = 42
+ws.row_dimensions[HR].height = 56
 
 first_ms, last_ms = len(fixed) + 1, len(fixed) + len(ms)
 fm, lm = get_column_letter(first_ms), get_column_letter(last_ms)
@@ -91,7 +91,7 @@ ws.conditional_formatting.add(pct_rng, FormulaRule(
     formula=[f'AND(ISNUMBER({get_column_letter(pct_col)}{first_row}),{get_column_letter(pct_col)}{first_row}=1)'],
     fill=PatternFill("solid", fgColor="C6EFCE")))
 
-widths = [5, 14, 18, 9] + [8.5] * len(ms) + [7, 8]
+widths = [5, 14, 18, 9] + [10.5] * len(ms) + [7, 8]
 for c, w in enumerate(widths, 1):
     ws.column_dimensions[get_column_letter(c)].width = w
 ws.freeze_panes = ws.cell(first_row, first_ms)

@@ -56,6 +56,12 @@ td input { width: 100%; border: 0; background: transparent; color: var(--ink); f
 td input:focus { outline: 2px solid var(--navy); outline-offset: 1px; }
 .section { padding: 18px 20px; display: grid; gap: 10px; position: relative; }
 .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-right: 64px; }
+.when { font-size: 13px; font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums; }
+.section.now { border-color: var(--navy); box-shadow: 0 0 0 2px var(--navy) inset; }
+.now-badge { display: none; font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--paper); background: var(--navy); border-radius: 3px; padding: 1px 7px; margin-left: 8px; vertical-align: 2px; }
+.section.now .now-badge { display: inline-block; }
+.timeline { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--muted); }
+.timeline b { color: var(--ink); font-variant-numeric: tabular-nums; }
 .count { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .stamp {
   position: absolute; top: 12px; right: 16px; width: 48px; height: 48px; border: 2.5px solid var(--shu); border-radius: 50%;
@@ -83,6 +89,7 @@ button.danger { border-color: var(--shu); color: var(--shu); }
   <header>
     <div class="eyebrow">長崎県・中学3年生用</div>
     <h1 id="title"></h1>
+    <ol class="timeline" id="timeline"></ol>
     <p class="lead">できた項目にチェックを入れましょう。チェックはこの端末のブラウザだけに保存されます。手順や期限は高校ごとに違うので、必ず募集要項とインターネット出願マニュアルで確認してください。</p>
   </header>
 
@@ -105,13 +112,15 @@ button.danger { border-color: var(--shu); color: var(--shu); }
 </div>
 
 <script>
-const DATA = {"title": "私立高校 Web出願 チェックシート", "subtitle": "長崎県・中学3年生用　できたら「生徒」欄に✓、担任が確認したら「担任」欄に✓。手順や期限は高校ごとに違うので、必ず募集要項とインターネット出願マニュアルで確認しましょう。", "schoolColumns": ["高校名", "学科・コース", "入試区分", "出願期間", "受験料の支払期限", "試験日", "合格発表", "入学手続の締切"], "milestones": ["受験校決定", "要項確認", "メール登録", "写真データ", "下書き確認", "Web入力完了", "受験料支払", "担任へ報告", "入力内容照合", "調査書発送", "受験票印刷", "受験票確認"], "sections": [{"title": "1　受験校を決める", "items": [["三者面談で、受験する私立高校・学科・コースを決めた", "公立高校との組み合わせも確認"], ["入試区分（推薦・専願・一般）を決め、出願の条件を満たしているか確認した", "推薦・専願は合格したら入学が前提"], ["受験料・入学金・入学手続の締切（公立の合格発表より前か）を保護者と確認した", "延納制度の有無も確認"]]}, {"title": "2　募集要項を確認する", "items": [["今年度の募集要項とインターネット出願マニュアルを手に入れた", "高校のWebサイト・長崎県私学協会の一覧"], ["事前入力の開始日・出願期間・受験料の支払期限を確認した", "上の「受験する高校」の表に書く"], ["中学校の校内締切（担任に出願完了を報告する日）を確認した", "高校の締切より早いことが多い"], ["試験日・合格発表日・入学手続の締切を確認した", ""]]}, {"title": "3　出願の準備をする", "items": [["保護者が受け取れるメールアドレスを用意し、出願サイトからのメールを受信できるよう設定した", "迷惑メール設定に注意"], ["顔写真のデータを用意した（撮影時期・服装・背景・サイズは要項どおり）", "正面・無帽・背景は無地"], ["出願用の下書きに入力内容を書き、担任に確認してもらった", "高校が配る下書き用紙を使う"], ["入力に使うパソコンやスマートフォンと、印刷の方法を用意した", "コンビニのプリントも可"]]}, {"title": "4　Web出願の入力をする", "items": [["出願サイトで利用者登録をし、IDとパスワードを控えた", ""], ["受験する試験・入試区分・学科・コースを正しく選んだ", ""], ["氏名・ふりがな・生年月日を正しく入力した", "外字は要項の指示に従う"], ["住所・電話番号・緊急連絡先を正しく入力した", "番地・建物名・部屋番号も省略しない"], ["中学校名と卒業見込みの年月を正しく入力した", "正式名称で入力"], ["保護者の情報を入力した", ""], ["顔写真のデータをアップロードした", ""], ["入力内容を保護者と一緒に確認してから確定した", "確定後は修正できないことがある"]]}, {"title": "5　受験料を支払う", "items": [["支払方法（クレジットカード・コンビニなど）を選び、期限内に支払った", ""], ["支払いの控えと出願完了のメールを確認・保存した", "受付番号を控える"]]}, {"title": "6　中学校に報告する", "items": [["出願が完了したことを担任に報告した（受付番号・受験校・入試区分）", "校内締切までに"], ["担任が入力内容を調査書の内容（氏名・生年月日など）と照合した", "担任が確認"], ["中学校から高校へ調査書・推薦書などの書類を送った", "中学校がまとめて送付"], ["高校から求められた書類の印刷・提出を終えた", "必要な場合のみ"]]}, {"title": "7　受験票を受け取る", "items": [["受験票を印刷できる日を確認し、印刷した", "用紙サイズ・カラーの指定に注意"], ["受験番号・試験日・試験会場・集合時刻を確認した", ""], ["受験票をなくさないように保管した（コピーも取った）", ""]]}, {"title": "8　試験の前に", "items": [["試験会場までの交通手段と所要時間を確認した", "天候が悪い日の行き方も考える"], ["持ち物（受験票・筆記用具・上履きなど）を確認した", ""], ["合格後の手続き（入学金の納付・書類提出）の締切を確認した", ""]]}]};
+const DATA = {"title": "私立高校 Web出願 チェックシート", "subtitle": "長崎県・中学3年生用　できたら「生徒」欄に✓、先生が確認したら「先生」欄に✓。日付は本校の出願日程です。入力の細かい方法は、各高校の募集要項とインターネット出願マニュアルで確認しましょう。", "schoolColumns": ["高校名", "学科・コース", "入試区分", "出願期間", "受験料の支払期限", "試験日", "合格発表", "入学手続の締切"], "milestones": [["住所確認", "11/20"], ["説明会", "11/27"], ["手書き下書き", "11/27"], ["オンライン下書き", "12/1〜3"], ["下書き印刷", "12/1〜3"], ["担当チェック", "12/4"], ["修正", "12/4〜10"], ["出願確定", "12/4〜10"], ["受験料支払", "12/4〜10"], ["志願票・受験票印刷", "12/4〜10"], ["学校へ提出", "12/11"], ["提出書類確認", "12/11"]], "sections": [{"title": "事前に　受験校を決める", "date": "11月20日まで", "start": "2026-10-01", "end": "2026-11-19", "items": [["三者面談で、受験する私立高校・学科・コースを決めた", "公立高校との組み合わせも確認"], ["入試区分（推薦・専願・一般）を決め、出願の条件を満たしているか確認した", "推薦・専願は合格したら入学が前提"], ["受験料・入学金・入学手続の締切を保護者と確認した", "延納制度の有無も確認"]]}, {"title": "住所を確認する", "date": "11月20日（金）", "start": "2026-11-20", "end": "2026-11-20", "items": [["郵便番号と住所を、番地・建物名・部屋番号まで正確に確認した", "住民票や保険証などで確認"], ["保護者の氏名（ふりがな）・続柄・電話番号を確認した", ""], ["出願に使うメールアドレス（保護者が受け取れるもの）を決めた", ""], ["自分の氏名・ふりがな・生年月日の正しい書き方を確認した", "旧字体・外字があれば担任に相談"]]}, {"title": "説明を聞き、手書きで下書きする", "date": "11月27日（金）", "start": "2026-11-27", "end": "2026-11-27", "items": [["受験する高校の担当の先生から、出願の仕方の説明を聞いた", "募集要項・出願マニュアルを受け取る"], ["受験校の日程を、上の「受験する高校」の表に書いた", ""], ["手書きの下書き用紙に、入力する内容をすべて書いた", "11月20日に確認した住所を見て書く"], ["下書きを家に持ち帰り、保護者に見せて、12月1〜3日の予定を伝えた", ""]]}, {"title": "家庭でオンラインの下書きをする", "date": "12月1日（火）〜3日（木）", "start": "2026-12-01", "end": "2026-12-03", "items": [["出願サイトからのメールを受け取れるように、受信設定をした", "迷惑メール設定に注意"], ["出願サイトで利用者登録をし、IDとパスワードを控えた", ""], ["手書きの下書きを見ながら、保護者と一緒に出願内容を入力した", "まだ出願を確定しない"], ["顔写真のデータを用意してアップロードした", "撮影時期・服装・背景は要項どおり"], ["入力した内容（下書き）を印刷した", "自宅で印刷できない場合はコンビニのプリントを使う"]]}, {"title": "下書きのチェックを受ける", "date": "12月4日（金）", "start": "2026-12-04", "end": "2026-12-04", "items": [["印刷した下書きを学校に持ってきた", "忘れるとチェックを受けられない"], ["担当の先生に下書きをチェックしてもらった", ""], ["直すところを下書きに赤で書き込み、家に持ち帰った", ""]]}, {"title": "家庭でオンライン出願をする", "date": "12月4日（金）〜10日（木）", "start": "2026-12-04", "end": "2026-12-10", "items": [["先生に言われたところを直した", ""], ["保護者と一緒に最終確認をしてから、出願を確定した", "確定後は直せないことがある"], ["受験料を期限内に支払い、支払いの控えを保管した", "支払方法は高校ごとに確認"], ["出願完了のメールを確認し、受付番号を控えた", ""], ["志願票と受験票を、指定された用紙・サイズで印刷した", "カラー指定などに注意"]]}, {"title": "志願票と受験票を学校へ提出する", "date": "12月11日（金）まで", "start": "2026-12-11", "end": "2026-12-11", "items": [["印刷した志願票と受験票を学校に提出した", "12月11日（金）までに"], ["受験番号・試験日・試験会場・集合時刻を確認し、メモした", ""], ["提出する前に、志願票と受験票のコピーを取った（または写真を撮った）", "控えとして保管"]]}, {"title": "試験の前に", "date": "試験日まで", "start": "2026-12-12", "end": "2027-02-28", "items": [["受験票の受け取り方と保管の仕方を確認した", "学校の指示に従う"], ["試験会場までの交通手段と所要時間を確認した", "天候が悪い日の行き方も考える"], ["持ち物（受験票・筆記用具・上履きなど）を確認した", ""], ["合格後の手続き（入学金の納付・書類提出）の締切を確認した", ""]]}]};
 const KEY = "sinro-web-shutsugan-v1";
 let state = { checks: {}, schools: {} };
 try { state = Object.assign(state, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
 
 document.getElementById("title").textContent = DATA.title;
+document.getElementById("timeline").innerHTML = DATA.sections.slice(1, -1)
+  .map(s => `<li><b>${s.date.replace(/（.）/g, "")}</b> ${s.title}</li>`).join("");
 
 // 受験校の表
 const tbl = document.getElementById("schools");
@@ -140,7 +149,7 @@ const sectionEls = [];
 DATA.sections.forEach((sec, si) => {
   const el = document.createElement("section");
   el.className = "card section";
-  el.innerHTML = `<div class="stamp" aria-hidden="true">済</div><div class="section-head"><h2>${sec.title}</h2><span class="count"></span></div>`;
+  el.innerHTML = `<div class="stamp" aria-hidden="true">済</div><div class="section-head"><div><div class="when">${sec.date}<span class="now-badge">今ここ</span></div><h2>${sec.title}</h2></div><span class="count"></span></div>`;
   const ul = document.createElement("ul");
   sec.items.forEach(([text, note]) => {
     const id = `item-${++n}`;
@@ -154,6 +163,8 @@ DATA.sections.forEach((sec, si) => {
   el.appendChild(ul);
   host.appendChild(el);
   sectionEls.push(el);
+  const today = new Date().toISOString().slice(0, 10);
+  if (sec.start <= today && today <= sec.end) el.classList.add("now");
 });
 
 function update() {

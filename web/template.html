@@ -56,6 +56,12 @@ td input { width: 100%; border: 0; background: transparent; color: var(--ink); f
 td input:focus { outline: 2px solid var(--navy); outline-offset: 1px; }
 .section { padding: 18px 20px; display: grid; gap: 10px; position: relative; }
 .section-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding-right: 64px; }
+.when { font-size: 13px; font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums; }
+.section.now { border-color: var(--navy); box-shadow: 0 0 0 2px var(--navy) inset; }
+.now-badge { display: none; font-size: 11px; font-weight: 700; letter-spacing: .08em; color: var(--paper); background: var(--navy); border-radius: 3px; padding: 1px 7px; margin-left: 8px; vertical-align: 2px; }
+.section.now .now-badge { display: inline-block; }
+.timeline { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--muted); }
+.timeline b { color: var(--ink); font-variant-numeric: tabular-nums; }
 .count { font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .stamp {
   position: absolute; top: 12px; right: 16px; width: 48px; height: 48px; border: 2.5px solid var(--shu); border-radius: 50%;
@@ -83,6 +89,7 @@ button.danger { border-color: var(--shu); color: var(--shu); }
   <header>
     <div class="eyebrow">長崎県・中学3年生用</div>
     <h1 id="title"></h1>
+    <ol class="timeline" id="timeline"></ol>
     <p class="lead">できた項目にチェックを入れましょう。チェックはこの端末のブラウザだけに保存されます。手順や期限は高校ごとに違うので、必ず募集要項とインターネット出願マニュアルで確認してください。</p>
   </header>
 
@@ -112,6 +119,8 @@ try { state = Object.assign(state, JSON.parse(localStorage.getItem(KEY) || "{}")
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
 
 document.getElementById("title").textContent = DATA.title;
+document.getElementById("timeline").innerHTML = DATA.sections.slice(1, -1)
+  .map(s => `<li><b>${s.date.replace(/（.）/g, "")}</b> ${s.title}</li>`).join("");
 
 // 受験校の表
 const tbl = document.getElementById("schools");
@@ -140,7 +149,7 @@ const sectionEls = [];
 DATA.sections.forEach((sec, si) => {
   const el = document.createElement("section");
   el.className = "card section";
-  el.innerHTML = `<div class="stamp" aria-hidden="true">済</div><div class="section-head"><h2>${sec.title}</h2><span class="count"></span></div>`;
+  el.innerHTML = `<div class="stamp" aria-hidden="true">済</div><div class="section-head"><div><div class="when">${sec.date}<span class="now-badge">今ここ</span></div><h2>${sec.title}</h2></div><span class="count"></span></div>`;
   const ul = document.createElement("ul");
   sec.items.forEach(([text, note]) => {
     const id = `item-${++n}`;
@@ -154,6 +163,8 @@ DATA.sections.forEach((sec, si) => {
   el.appendChild(ul);
   host.appendChild(el);
   sectionEls.push(el);
+  const today = new Date().toISOString().slice(0, 10);
+  if (sec.start <= today && today <= sec.end) el.classList.add("now");
 });
 
 function update() {

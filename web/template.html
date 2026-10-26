@@ -120,7 +120,7 @@ try { state = Object.assign(state, JSON.parse(localStorage.getItem(KEY) || "{}")
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} };
 
 document.getElementById("title").textContent = DATA.title;
-document.getElementById("timeline").innerHTML = DATA.sections.slice(1, -1)
+document.getElementById("timeline").innerHTML = DATA.sections.slice(0, -1)
   .map(s => `<li><b>${s.date.replace(/（.）/g, "")}</b> ${s.title}</li>`).join("");
 
 // 受験校の表

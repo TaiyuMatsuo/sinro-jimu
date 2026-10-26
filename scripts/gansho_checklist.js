@@ -16,13 +16,13 @@ const p = (children, opts = {}) => new Paragraph({ children: Array.isArray(child
 
 function cell(content, width, opts = {}) {
   const paras = (Array.isArray(content) ? content : [content]).map((c) =>
-    typeof c === "string" ? p(t(c, opts.run || {}), { alignment: opts.align }) : c);
+    typeof c === "string" ? p(t(c, opts.run || {}), { alignment: opts.align, spacing: { before: 0, after: 0, line: 250, lineRule: "exact" } }) : c);
   return new TableCell({
     children: paras,
     width: { size: width, type: WidthType.DXA },
     borders: BORDERS,
     verticalAlign: VerticalAlign.CENTER,
-    margins: { top: 50, bottom: 50, left: 90, right: 90 },
+    margins: { top: 40, bottom: 40, left: 80, right: 80 },
     shading: opts.fill ? { type: ShadingType.CLEAR, color: "auto", fill: opts.fill } : undefined,
     columnSpan: opts.span,
   });
@@ -30,7 +30,7 @@ function cell(content, width, opts = {}) {
 
 // ── データ（data/checklist.json を Word・Excel・Web で共有） ──
 const data = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "data", "checklist.json"), "utf8"));
-const sections = data.sections.map((s, i) => [`${i ? i + "　" : ""}${s.title}　［${s.date}］`, s.items]);
+const sections = data.sections.map((s, i) => [`${i + 1}　${s.title}　［${s.date}］`, s.items]);
 
 // ── 部品 ─────────────────────────────
 const COLS = [520, 5780, 2306, 800, 800]; // No / 確認項目 / 補足 / 生徒 / 担任
@@ -64,16 +64,20 @@ for (const [title, items] of sections) {
 }
 const checklist = new Table({ width: { size: W, type: WidthType.DXA }, columnWidths: COLS, rows });
 
-// 生徒情報
+// 生徒情報と確認欄
 const infoCols = [1400, 3700, 1400, 3706];
+const infoRow = (l1, v1, l2, v2, h) => new TableRow({ height: { value: h, rule: "atLeast" }, children: [
+  cell(l1, infoCols[0], { fill: "F2F2F2", align: AlignmentType.CENTER }),
+  cell(v1, infoCols[1]),
+  cell(l2, infoCols[2], { fill: "F2F2F2", align: AlignmentType.CENTER }),
+  cell(v2, infoCols[3]),
+] });
 const info = new Table({
   width: { size: W, type: WidthType.DXA }, columnWidths: infoCols,
-  rows: [new TableRow({ children: [
-    cell("年　組　番", infoCols[0], { fill: "F2F2F2", align: AlignmentType.CENTER }),
-    cell("　　年　　組　　番", infoCols[1]),
-    cell("氏　名", infoCols[2], { fill: "F2F2F2", align: AlignmentType.CENTER }),
-    cell("", infoCols[3]),
-  ] })],
+  rows: [
+    infoRow("年　組　番", "　　年　　組　　番", "氏　名", "", 360),
+    infoRow("保護者確認", "", "担任確認", "", 480),
+  ],
 });
 
 // 受験校の一覧
@@ -83,28 +87,16 @@ const schools = new Table({
   width: { size: W, type: WidthType.DXA }, columnWidths: schoolCols,
   rows: [
     new TableRow({ children: schoolHead.map((h, i) => cell(h, schoolCols[i], { fill: "F2F2F2", align: AlignmentType.CENTER, run: { bold: true, size: 15 } })) }),
-    ...[1, 2, 3].map(() => new TableRow({ height: { value: 520, rule: "atLeast" }, children: schoolCols.map((w) => cell("", w)) })),
+    ...[1, 2, 3].map(() => new TableRow({ height: { value: 400, rule: "atLeast" }, children: schoolCols.map((w) => cell("", w)) })),
   ],
 });
 
-// 保護者確認
-const signCols = [2000, 3103, 2000, 3103];
-const sign = new Table({
-  width: { size: W, type: WidthType.DXA }, columnWidths: signCols,
-  rows: [new TableRow({ height: { value: 600, rule: "atLeast" }, children: [
-    cell("保護者確認", signCols[0], { fill: "F2F2F2", align: AlignmentType.CENTER }),
-    cell("", signCols[1]),
-    cell("担任確認", signCols[2], { fill: "F2F2F2", align: AlignmentType.CENTER }),
-    cell("", signCols[3]),
-  ] })],
-});
-
-const heading = (text) => p(t(text, { bold: true, size: 22, color: "1F4E79" }), { spacing: { before: 200, after: 80 } });
+const heading = (text) => p(t(text, { bold: true, size: 22, color: "1F4E79" }), { spacing: { before: 140, after: 60 } });
 
 const doc = new Document({
   styles: { default: { document: { run: { font: FONT, size: 19 } } } },
   sections: [{
-    properties: { page: { margin: { top: 720, bottom: 720, left: 850, right: 850 } } },
+    properties: { page: { margin: { top: 600, bottom: 500, left: 850, right: 850 } } },
     children: [
       p(t(data.title, { bold: true, size: 32 }), { alignment: AlignmentType.CENTER, spacing: { after: 60 } }),
       p(t(data.subtitle, { size: 17, color: "555555" }), { alignment: AlignmentType.CENTER, spacing: { after: 160 } }),
@@ -113,8 +105,6 @@ const doc = new Document({
       schools,
       heading("チェック項目"),
       checklist,
-      heading("最終確認"),
-      sign,
     ],
   }],
 });
